@@ -1,0 +1,118 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
+</div>
+
+<tags:brutal-include value="footer"/>
+
+<script src="${contextPath}/js/jquery.75a285b4.js"></script>
+
+<script type="text/javascript">
+	//UI flags (GLOBAL VARIABLES)
+	var Globals = {};
+	Globals.inHouseUploading = ${env.supports('feature.inhouse.upload')};
+	Globals.linkTo = {};
+	Globals.linkTo.uploadAttachment = "${linkTo[AttachmentController].uploadAttachment}";
+	Globals.linkTo.getAttachment = "${linkTo[AttachmentController].downloadAttachment}";
+	Globals.linkTo.deleteAttachment = "${linkTo[AttachmentController].deleteAttachment}";
+
+	var ANYONE_CAN_CREATE_TAGS = ${env.supports('feature.tags.add.anyone')};
+	var TAGS_SPLITTER_CHAR = "${env.get('tags.splitter.char')}";
+	var LOGGED_IN = ${currentUser.loggedIn};
+	var MODERATOR = ${currentUser.moderator};
+	var KARMA = ${currentUser.current.karma};
+	var CONTEXT_PATH = "${contextPath}";
+	var AVIARY_API_KEY = "${env.get('filepicker.aviary.api_key')}";
+	var INK_API_KEY = "${env.get('filepicker.ink.api_key')}";
+	var ALL_TAGS_URL = "${linkTo[TagController].jsonTags}";
+	var MESSAGES_LOADER_URL = "${linkTo[MessagesController].loadMessages}";
+</script>
+
+<script src="${contextPath}/js/jquery-plugins.2d665e19.js"></script>
+
+<c:set var="locale" value="${env.get('locale')}" />
+<c:choose>
+	<c:when test="${locale eq 'de'}">
+		<script src="${contextPath}/js/jquery-plugin-translations-de.c165762b.js"></script>
+	</c:when>
+	<c:when test="${locale eq 'pt-BR'}">
+		<script src="${contextPath}/js/jquery-plugin-translations-pt_BR.9f9dd025.js"></script>
+	</c:when>
+</c:choose>
+
+<c:if test="${not env.supports('feature.inhouse.upload')}">
+	<script src="${contextPath}/js/filepicker.c1c254bd.js"></script>
+</c:if>
+
+<script src="${contextPath}/js/mamute.c3f5b07b.js"></script>
+
+<c:if test="${environment.supports('feature.analytics')}" >
+	<tags:brutal-include value="analytics"/>
+</c:if>
+
+<script type="text/javascript">
+
+// fix context path of ajax requests *cool* 
+$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+	if(options.url.indexOf(CONTEXT_PATH) != 0){
+		options.url = CONTEXT_PATH + options.url;
+	}
+});
+
+function errorPopup(text, target, clazz){
+	clazz = clazz || "";
+	if(!$(".validation-error.popup").is(":visible")) {
+		var errorPopup = $("<div class='"+ clazz +" validation-error popup close-popup'><div class='popup-error-message'>"+text+"</div><div class='subtitle'>("+ Messages.get('button_hint.click_to_close') +")</div></div>");
+		errorPopup.insertAfter(target).show();
+	}
+	setTimeout(function(){
+		errorPopup.fadeOut(200, "linear", function(){errorPopup.remove();});
+	},1500);
+}
+
+
+function setLoading(target){
+	target.html("<img src="+CONTEXT_PATH+"/imgs/loading.gif>");
+}
+
+function intro(){
+	if($("#intro")[0]){
+		$(".intro").css('visibility', 'visible').click(function(){
+			intro();
+		});
+		if($(".automatically-joyride")[0]){
+			$("#intro").joyride({});
+		}
+	}
+	$("#intro").joyride({});
+}
+
+$(function() {
+    <c:if test="${environment.supports('feature.intro')}" >
+	    intro();
+    </c:if>
+
+	prettyPrint();
+
+	<c:set var="dateFormat" value="${fn:toLowerCase(t['date.joda.simple.pattern'])}" />
+
+	$("#datepicker-age").pickadate({
+		format: '<c:out value="${dateFormat}" escapeXml="true" />',
+		max: -12*365,
+		readOnly: false
+	});
+
+	$(".datepicker").pickadate({
+		format: '<c:out value="${dateFormat}" escapeXml="true" />',
+		max: 1,
+		readOnly: false
+	});
+
+	$(".validated-form input").eq(0).focus();
+});
+</script>
+
+<tags:brutal-include value="finalJavascripts"/>
+
+</body>
+</html>
